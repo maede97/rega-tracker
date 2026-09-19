@@ -14,6 +14,15 @@ services:
       - CORS_ORIGIN=*
     restart: unless-stopped
 
+  server:
+    image: ghcr.io/maede97/rega-web:latest
+    build:
+      context: ..
+      dockerfile: web/Dockerfile
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
   fetcher:
     image: ghcr.io/maede97/rega-eink-server:latest
     build:

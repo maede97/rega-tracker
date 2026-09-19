@@ -2,3 +2,9 @@ flights.db
 __pycache__/
 wifi_credentials.h
 api_keys.txt
+web/node_modules/
+web/.next/
+web/out/
+web/.vercel/
+web/*.tsbuildinfo
+web/.env*

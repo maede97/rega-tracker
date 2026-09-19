@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --rega-red: #d2232a;
+  --rega-red-deep: #9e1821;
+  --rega-red-soft: #fbe4e4;
+  --sand: #f6f1ea;
+  --paper: #fffdfa;
+  --ink: #172033;
+  --muted: #667085;
+  --gold: #f1c84b;
+  --line: rgba(23, 32, 51, 0.08);
+  --shadow: 0 20px 45px rgba(125, 36, 40, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--sand);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(210, 35, 42, 0.16), transparent 32%),
+    linear-gradient(180deg, #fff8f4 0%, var(--sand) 58%, #f3ede5 100%);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #d9e4f0;
+}
+
+.leaflet-control-attribution {
+  font-family: var(--font-ibm-plex-mono);
+}
+
+.leaflet-tooltip.callsign-label {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 253, 250, 0.96);
+  color: var(--rega-red);
+  box-shadow: 0 8px 20px rgba(23, 32, 51, 0.12);
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+}
+
+.leaflet-tooltip.callsign-label.stale-label {
+  opacity: 0.62;
+}
+
+.leaflet-tooltip.callsign-label.followed-label {
+  background: var(--gold);
+  color: #111827;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+}
