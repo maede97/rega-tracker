@@ -4,9 +4,12 @@ import { TrackerFlightList } from "@/components/tracker-flight-list";
 type TrackerFlightSidebarProps = {
   followedCallsign: string | null;
   isLiveEnabled: boolean;
+  isShareMode: boolean;
   onClearApiKey: () => void;
   onFollowFlight: (callsign: string) => void;
   onSelectFlight: (callsign: string) => void;
+  onShareFlight: (callsign: string) => void;
+  shareableCallsigns: ReadonlySet<string>;
   showClearKey: boolean;
   sortedFlights: VisibleFlight[];
 };
@@ -14,9 +17,12 @@ type TrackerFlightSidebarProps = {
 export function TrackerFlightSidebar({
   followedCallsign,
   isLiveEnabled,
+  isShareMode,
   onClearApiKey,
   onFollowFlight,
   onSelectFlight,
+  onShareFlight,
+  shareableCallsigns,
   showClearKey,
   sortedFlights,
 }: TrackerFlightSidebarProps) {
@@ -28,6 +34,11 @@ export function TrackerFlightSidebar({
           <div>
             <h2 className="text-lg font-semibold text-slate-950">Helikopterliste</h2>
           </div>
+          {isShareMode ? (
+            <div className="rounded-full border border-[var(--line)] bg-amber-50 px-3 py-1 font-mono text-xs font-medium text-amber-700">
+              Geteilter Flug
+            </div>
+          ) : null}
           {isLiveEnabled ? (
             <div className="rounded-full border border-[var(--line)] bg-[var(--rega-red-soft)] px-3 py-1 font-mono text-xs font-medium text-[var(--rega-red)]">
               Live
@@ -41,6 +52,8 @@ export function TrackerFlightSidebar({
           followedCallsign={followedCallsign}
           onFollowFlight={onFollowFlight}
           onSelectFlight={onSelectFlight}
+          onShareFlight={onShareFlight}
+          shareableCallsigns={shareableCallsigns}
           sortedFlights={sortedFlights}
         />
       </div>

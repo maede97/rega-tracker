@@ -27,6 +27,21 @@ export type VisibleFlight = {
   points: FlightPoint[];
 };
 
+export type FlightSegment = {
+  callsign: string;
+  end: number;
+  points: FlightPoint[];
+  start: number;
+};
+
+export type SharedFlightDescriptor = {
+  callsign: string;
+  end?: number;
+  start: number;
+};
+
+export const FLIGHT_SEGMENT_GAP_SECONDS = 20 * 60;
+
 export function normalizeFlights(records: ApiFlightRecord[]) {
   const grouped: FlightsByCallsign = {};
 
@@ -57,6 +72,87 @@ export function normalizeFlights(records: ApiFlightRecord[]) {
   }
 
   return grouped;
+}
+
+export function segmentFlightPoints(
+  callsign: string,
+  points: FlightPoint[],
+  maxGapSeconds = FLIGHT_SEGMENT_GAP_SECONDS,
+) {
+  if (!points.length) {
+    return [];
+  }
+
+  const segments: FlightSegment[] = [];
+  let currentPoints: FlightPoint[] = [points[0]];
+
+  for (let index = 1; index < points.length; index += 1) {
+    const point = points[index];
+    const previousPoint = currentPoints.at(-1);
+
+    if (!previousPoint) {
+      currentPoints = [point];
+      continue;
+    }
+
+    if (point.ts - previousPoint.ts > maxGapSeconds) {
+      segments.push({
+        callsign,
+        end: currentPoints.at(-1)?.ts ?? currentPoints[0].ts,
+        points: currentPoints,
+        start: currentPoints[0].ts,
+      });
+      currentPoints = [point];
+      continue;
+    }
+
+    currentPoints.push(point);
+  }
+
+  segments.push({
+    callsign,
+    end: currentPoints.at(-1)?.ts ?? currentPoints[0].ts,
+    points: currentPoints,
+    start: currentPoints[0].ts,
+  });
+
+  return segments;
+}
+
+export function getFlightSegments(
+  flightData: FlightsByCallsign,
+  callsign: string,
+  maxGapSeconds = FLIGHT_SEGMENT_GAP_SECONDS,
+) {
+  return segmentFlightPoints(callsign, flightData[callsign] ?? [], maxGapSeconds);
+}
+
+export function findSharedFlightSegment(
+  flightData: FlightsByCallsign,
+  descriptor: SharedFlightDescriptor,
+  maxGapSeconds = FLIGHT_SEGMENT_GAP_SECONDS,
+) {
+  const segments = getFlightSegments(flightData, descriptor.callsign, maxGapSeconds);
+  const requestedEnd = descriptor.end ?? descriptor.start;
+
+  return (
+    segments.find((segment) => {
+      const coversRequestedRange = segment.start <= descriptor.start && segment.end >= requestedEnd;
+      const overlapsRequestedRange = segment.end >= descriptor.start && segment.start <= requestedEnd;
+
+      return coversRequestedRange || overlapsRequestedRange;
+    }) ?? null
+  );
+}
+
+export function getFlightDataForSegment(segment: FlightSegment | null): FlightsByCallsign {
+  if (!segment) {
+    return {};
+  }
+
+  return {
+    [segment.callsign]: segment.points,
+  };
 }
 
 export function getVisibleFlights(
