@@ -85,7 +85,7 @@ def get_flights(limit: int = 1000, authorization: str | None = Header(default=No
         ensure_schema(conn)
         rows = conn.execute(
             """
-            SELECT timestamp, callsign, latitude, longitude, height, active
+            SELECT timestamp, callsign, latitude, longitude, height, ground_speed, active
             FROM flights
             ORDER BY timestamp DESC
             LIMIT ?
@@ -100,9 +100,10 @@ def get_flights(limit: int = 1000, authorization: str | None = Header(default=No
             "latitude": latitude,
             "longitude": longitude,
             "height": height,
+            "ground_speed": ground_speed,
             "active": active,
         }
-        for timestamp, callsign, latitude, longitude, height, active in rows
+        for timestamp, callsign, latitude, longitude, height, ground_speed, active in rows
     ]
     return JSONResponse(content={"flights": payload, "count": len(payload)})
 
@@ -117,7 +118,7 @@ def get_flights_history(limit: int = 1000, authorization: str | None = Header(de
         ensure_schema(conn)
         rows = conn.execute(
             """
-            SELECT observed_at, callsign, latitude, longitude, height, recorded_at
+            SELECT observed_at, callsign, latitude, longitude, height, ground_speed, recorded_at
             FROM flights_history
             ORDER BY observed_at DESC
             LIMIT ?
@@ -132,9 +133,10 @@ def get_flights_history(limit: int = 1000, authorization: str | None = Header(de
             "latitude": latitude,
             "longitude": longitude,
             "height": height,
+            "ground_speed": ground_speed,
             "recorded_at": recorded_at,
         }
-        for observed_at, callsign, latitude, longitude, height, recorded_at in rows
+        for observed_at, callsign, latitude, longitude, height, ground_speed, recorded_at in rows
     ]
     return JSONResponse(content={"history": payload, "count": len(payload)})
 
@@ -146,7 +148,7 @@ def get_flights_range(start: str, end: str, authorization: str | None = Header(d
         ensure_schema(conn)
         rows = conn.execute(
             """
-            SELECT observed_at, callsign, latitude, longitude, height
+            SELECT observed_at, callsign, latitude, longitude, height, ground_speed
             FROM flights_history
             WHERE observed_at > ? AND observed_at < ?
             ORDER BY observed_at DESC
@@ -161,7 +163,8 @@ def get_flights_range(start: str, end: str, authorization: str | None = Header(d
             "latitude": latitude,
             "longitude": longitude,
             "height": height,
+            "ground_speed": ground_speed,
         }
-        for observed_at, callsign, latitude, longitude, height in rows
+        for observed_at, callsign, latitude, longitude, height, ground_speed in rows
     ]
     return JSONResponse(content={"flights": payload, "count": len(payload)})

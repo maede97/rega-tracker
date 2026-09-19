@@ -22,6 +22,7 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             latitude REAL,
             longitude REAL,
             height REAL,
+            ground_speed REAL,
             active BOOLEAN
         )
         """
@@ -34,10 +35,13 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             latitude REAL,
             longitude REAL,
             height REAL,
+            ground_speed REAL,
             recorded_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
         """
     )
 
     _add_column_if_missing(conn, "flights", "height", "REAL")
+    _add_column_if_missing(conn, "flights", "ground_speed", "REAL")
     _add_column_if_missing(conn, "flights_history", "height", "REAL")
+    _add_column_if_missing(conn, "flights_history", "ground_speed", "REAL")

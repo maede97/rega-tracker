@@ -13,8 +13,6 @@ DB_PATH = Path(__file__).resolve().with_name("flights.db")
 AIRLINE_ICAO = "RGA"
 
 
-
-
 def fetch_current_flights() -> list[dict[str, object]]:
     api = FlightRadar24API()
     bounds = api.get_bounds({
@@ -45,6 +43,7 @@ def fetch_current_flights() -> list[dict[str, object]]:
                 "latitude": getattr(flight, "latitude", None),
                 "longitude": getattr(flight, "longitude", None),
                 "height": getattr(flight, "altitude", None),
+                "ground_speed": getattr(flight, "ground_speed", None),
                 "active": 1
             }
         )
@@ -79,7 +78,7 @@ def persist_flights(records: list[dict[str, object]]) -> int:
         )
         
         conn.executemany(
-            "INSERT INTO flights (timestamp, callsign, latitude, longitude, height, active) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO flights (timestamp, callsign, latitude, longitude, height, ground_speed, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
                 (
                     record.get("timestamp"),
@@ -87,6 +86,7 @@ def persist_flights(records: list[dict[str, object]]) -> int:
                     record.get("latitude"),
                     record.get("longitude"),
                     record.get("height"),
+                    record.get("ground_speed"),
                     record.get("active"),
                 )
                 for record in filtered_records
@@ -94,8 +94,8 @@ def persist_flights(records: list[dict[str, object]]) -> int:
         )
         conn.executemany(
             """
-            INSERT INTO flights_history (observed_at, callsign, latitude, longitude, height)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO flights_history (observed_at, callsign, latitude, longitude, height, ground_speed)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -104,6 +104,7 @@ def persist_flights(records: list[dict[str, object]]) -> int:
                     record.get("latitude"),
                     record.get("longitude"),
                     record.get("height"),
+                    record.get("ground_speed"),
                 )
                 for record in filtered_records
             ],
