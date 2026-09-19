@@ -427,11 +427,10 @@ bool ensureWiFi()
 
 bool fetchFlights()
 {
-  // curl -H "Authorization: Bearer 53991a01-1ae0-448a-b5b4-7bc8f7c395b8" https://rega.hueppis.com/flights
   WiFiClientSecure client;
   client.setInsecure();
   HTTPClient https;
-  if (!https.begin(client, "https://rega.hueppis.com/flights"))
+  if (!https.begin(client, "https://rega-api.hueppis.com/flights"))
   {
     return false;
   }
