@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { clampRange, fromDatetimeLocalValue, toDatetimeLocalValue } from "@/lib/date";
 import { TrackerApiKeyModal } from "@/components/tracker-api-key-modal";
-import { TrackerControls, type TrackerPreset } from "@/components/tracker-controls";
+import { TrackerControls, TrackerPlaybackBar, type TrackerPreset } from "@/components/tracker-controls";
 import { TrackerFlightSidebar } from "@/components/tracker-flight-sidebar";
 import { TrackerHeader } from "@/components/tracker-header";
 import { TrackerMapPanel } from "@/components/tracker-map-panel";
@@ -847,6 +847,20 @@ export function TrackerApp() {
 
   const controls = <TrackerControls {...controlsProps} />;
   const mobileControls = <TrackerControls {...controlsProps} showFullscreenButton={false} />;
+  const mobileSharedPlaybackBar = sharedFlight ? (
+    <TrackerPlaybackBar
+      currentTime={currentTime}
+      isPlaying={isPlaying}
+      onDecreasePlaySpeed={controlsProps.onDecreasePlaySpeed}
+      onIncreasePlaySpeed={controlsProps.onIncreasePlaySpeed}
+      onTimelineChange={handleTimelineChange}
+      onTogglePlayback={handleTogglePlayback}
+      playSpeed={playSpeed}
+      sliderStep={sliderStep}
+      timelineEnd={timelineEnd}
+      timelineStart={timelineStart}
+    />
+  ) : null;
 
   return (
     <main className="relative flex h-dvh min-h-dvh flex-col overflow-hidden xl:h-screen xl:max-h-screen">
@@ -863,6 +877,7 @@ export function TrackerApp() {
           isLiveEnabled={isLiveEnabled}
           isPseudoFullscreen={isPseudoFullscreen}
           mapShellRef={mapShellRef}
+          mobileOverlay={mobileSharedPlaybackBar}
           onMapInteraction={() => setFollowedCallsign(null)}
           onShareFlight={handleShareFlight}
           onToggleFollow={handleToggleFollow}

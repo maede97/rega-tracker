@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { FlightsByCallsign, VisibleFlight } from "@/lib/tracker";
 
 const TrackerMap = dynamic(
@@ -20,6 +20,7 @@ type TrackerMapPanelProps = {
   focusedCallsign: string | null;
   followedCallsign: string | null;
   isLiveEnabled: boolean;
+  mobileOverlay?: ReactNode;
   isPseudoFullscreen: boolean;
   mapShellRef: RefObject<HTMLDivElement | null>;
   onMapInteraction: () => void;
@@ -35,6 +36,7 @@ export function TrackerMapPanel({
   focusedCallsign,
   followedCallsign,
   isLiveEnabled,
+  mobileOverlay,
   isPseudoFullscreen,
   mapShellRef,
   onMapInteraction,
@@ -50,6 +52,13 @@ export function TrackerMapPanel({
       }`}
       ref={mapShellRef}
     >
+      {mobileOverlay ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[500] p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] xl:hidden">
+          <div className="pointer-events-auto rounded-[1.5rem] border border-white/55 bg-[linear-gradient(135deg,rgba(165,12,31,0.92),rgba(110,7,18,0.92))] p-3 text-white shadow-xl backdrop-blur-md">
+            {mobileOverlay}
+          </div>
+        </div>
+      ) : null}
       <TrackerMap
         autoZoom={autoZoom}
         flightData={flightData}

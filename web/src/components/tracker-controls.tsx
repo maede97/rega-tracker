@@ -16,40 +16,132 @@ export type TrackerPreset = {
   value: number;
 };
 
-type TrackerControlsProps = {
-  autoZoom: boolean;
+export type TrackerPlaybackBarProps = {
   currentTime: number;
+  isPlaying: boolean;
+  onDecreasePlaySpeed: () => void;
+  onIncreasePlaySpeed: () => void;
+  onTimelineChange: (value: number) => void;
+  onTogglePlayback: () => void;
+  playSpeed: number;
+  sliderStep: number;
+  timelineEnd: number;
+  timelineStart: number;
+};
+
+type TrackerControlsProps = TrackerPlaybackBarProps & {
+  autoZoom: boolean;
   endInput: string;
   isFullscreen: boolean;
   isLiveEnabled: boolean;
   isLiveFetching: boolean;
   isManualLoading: boolean;
-  isPlaying: boolean;
   liveProgress: number;
   maxEndInput: string;
   onAutoZoomChange: (nextValue: boolean) => void;
-  onDecreasePlaySpeed: () => void;
   onEndInputChange: (value: string) => void;
   onFetchRange: () => void;
-  onIncreasePlaySpeed: () => void;
   onPresetChange: (seconds: number) => void;
   onStartInputChange: (value: string) => void;
-  onTimelineChange: (value: number) => void;
   onToggleFullscreen: () => void;
   onToggleLive: () => void;
-  onTogglePlayback: () => void;
-  playSpeed: number;
   presets: TrackerPreset[];
   showFullscreenButton?: boolean;
   showInlineLiveStatus?: boolean;
-  sliderStep: number;
   startInput: string;
-  timelineEnd: number;
-  timelineStart: number;
 };
 
 function getLiveClockStroke(progress: number) {
   return String(100 * (1 - Math.min(1, Math.max(0, progress))));
+}
+
+export function TrackerPlaybackBar({
+  currentTime,
+  isPlaying,
+  onDecreasePlaySpeed,
+  onIncreasePlaySpeed,
+  onTimelineChange,
+  onTogglePlayback,
+  playSpeed,
+  sliderStep,
+  timelineEnd,
+  timelineStart,
+}: TrackerPlaybackBarProps) {
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    queueMicrotask(() => {
+      if (!isCancelled) {
+        setIsHydrated(true);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  const sliderIsDisabled = !isHydrated || timelineEnd <= timelineStart;
+  const sliderMax = isHydrated ? timelineEnd || 100 : 100;
+  const sliderMin = isHydrated ? timelineStart || 0 : 0;
+  const sliderValue = isHydrated ? currentTime || timelineStart || 0 : 0;
+  const sliderResolvedStep = isHydrated ? sliderStep : 60;
+
+  return (
+    <div className="flex flex-col gap-2 rounded-[1.4rem] border border-white/15 bg-white/10 px-2 py-2 xl:min-w-0 xl:flex-1 xl:flex-row xl:items-center xl:gap-1.5 xl:rounded-full xl:px-1.5 xl:py-1">
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1 xl:min-w-0 xl:flex-1 xl:w-28 2xl:w-36">
+          <input
+            className="w-full accent-white"
+            disabled={sliderIsDisabled}
+            max={sliderMax}
+            min={sliderMin}
+            onChange={(event) => onTimelineChange(Number(event.target.value))}
+            step={sliderResolvedStep}
+            type="range"
+            value={sliderValue}
+          />
+        </div>
+        <button
+          aria-label="Wiedergabegeschwindigkeit verringern"
+          className="cursor-pointer grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border border-white/15 bg-transparent text-white transition hover:bg-white/12 xl:h-8 xl:w-8"
+          onClick={onDecreasePlaySpeed}
+          title="Wiedergabegeschwindigkeit verringern"
+          type="button"
+        >
+          <Minus className="h-4 w-4" strokeWidth={2.25} />
+        </button>
+        <button
+          aria-label={isPlaying ? "Wiedergabe pausieren" : "Wiedergabe starten"}
+          className={`cursor-pointer grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border text-white transition xl:h-8 xl:w-8 ${
+            isPlaying
+              ? "border-[var(--rega-red)] bg-[var(--rega-red)] text-white"
+              : "border-white/15 bg-transparent hover:bg-white/12"
+          }`}
+          onClick={onTogglePlayback}
+          title={isPlaying ? "Wiedergabe pausieren" : "Wiedergabe starten"}
+          type="button"
+        >
+          {isPlaying ? <Pause className="h-4 w-4" strokeWidth={2.25} /> : <Play className="h-4 w-4" strokeWidth={2.25} />}
+        </button>
+        <button
+          aria-label="Wiedergabegeschwindigkeit erhoehen"
+          className="cursor-pointer grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border border-white/15 bg-transparent text-white transition hover:bg-white/12 xl:h-8 xl:w-8"
+          onClick={onIncreasePlaySpeed}
+          title="Wiedergabegeschwindigkeit erhoehen"
+          type="button"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2.25} />
+        </button>
+      </div>
+      <div className="flex items-center justify-between gap-3 px-1 xl:min-w-0 xl:flex-shrink-0 xl:justify-start xl:gap-2 xl:px-0">
+        <div className="min-w-10 text-left font-mono text-sm text-white xl:text-center xl:text-[0.8rem]">{playSpeed}x</div>
+        <div className="text-right text-sm text-white/90 xl:min-w-32 xl:text-center xl:text-[0.8rem] 2xl:min-w-36">{formatSwiss(currentTime)}</div>
+      </div>
+    </div>
+  );
 }
 
 export function TrackerControls({
@@ -83,28 +175,6 @@ export function TrackerControls({
   timelineEnd,
   timelineStart,
 }: TrackerControlsProps) {
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    queueMicrotask(() => {
-      if (!isCancelled) {
-        setIsHydrated(true);
-      }
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
-
-  const sliderIsDisabled = !isHydrated || timelineEnd <= timelineStart;
-  const sliderMax = isHydrated ? timelineEnd || 100 : 100;
-  const sliderMin = isHydrated ? timelineStart || 0 : 0;
-  const sliderValue = isHydrated ? currentTime || timelineStart || 0 : 0;
-  const sliderResolvedStep = isHydrated ? sliderStep : 60;
-
   return (
     <div className="flex flex-col gap-3 xl:flex-row xl:flex-nowrap xl:items-center xl:justify-end xl:gap-2 2xl:gap-3">
       <label className="flex min-w-44 flex-col gap-1 text-xs font-medium uppercase tracking-[0.18em] text-white/75 xl:min-w-36 xl:text-[0.65rem] 2xl:min-w-40">
@@ -200,57 +270,18 @@ export function TrackerControls({
           </label>
         </div>
       ) : null}
-      <div className="flex flex-col gap-2 rounded-[1.4rem] border border-white/15 bg-white/10 px-2 py-2 xl:min-w-0 xl:flex-1 xl:flex-row xl:items-center xl:gap-1.5 xl:rounded-full xl:px-1.5 xl:py-1">
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1 xl:min-w-0 xl:flex-1 xl:w-28 2xl:w-36">
-            <input
-              className="w-full accent-white"
-              disabled={sliderIsDisabled}
-              max={sliderMax}
-              min={sliderMin}
-              onChange={(event) => onTimelineChange(Number(event.target.value))}
-              step={sliderResolvedStep}
-              type="range"
-              value={sliderValue}
-            />
-          </div>
-          <button
-            aria-label="Wiedergabegeschwindigkeit verringern"
-            className="cursor-pointer grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border border-white/15 bg-transparent text-white transition hover:bg-white/12 xl:h-8 xl:w-8"
-            onClick={onDecreasePlaySpeed}
-            title="Wiedergabegeschwindigkeit verringern"
-            type="button"
-          >
-            <Minus className="h-4 w-4" strokeWidth={2.25} />
-          </button>
-          <button
-            aria-label={isPlaying ? "Wiedergabe pausieren" : "Wiedergabe starten"}
-            className={`cursor-pointer grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border text-white transition xl:h-8 xl:w-8 ${
-              isPlaying
-                ? "border-[var(--rega-red)] bg-[var(--rega-red)] text-white"
-                : "border-white/15 bg-transparent hover:bg-white/12"
-            }`}
-            onClick={onTogglePlayback}
-            title={isPlaying ? "Wiedergabe pausieren" : "Wiedergabe starten"}
-            type="button"
-          >
-            {isPlaying ? <Pause className="h-4 w-4" strokeWidth={2.25} /> : <Play className="h-4 w-4" strokeWidth={2.25} />}
-          </button>
-          <button
-            aria-label="Wiedergabegeschwindigkeit erhoehen"
-            className="cursor-pointer grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border border-white/15 bg-transparent text-white transition hover:bg-white/12 xl:h-8 xl:w-8"
-            onClick={onIncreasePlaySpeed}
-            title="Wiedergabegeschwindigkeit erhoehen"
-            type="button"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.25} />
-          </button>
-        </div>
-        <div className="flex items-center justify-between gap-3 px-1 xl:min-w-0 xl:flex-shrink-0 xl:justify-start xl:gap-2 xl:px-0">
-          <div className="min-w-10 text-left font-mono text-sm text-white xl:text-center xl:text-[0.8rem]">{playSpeed}x</div>
-          <div className="text-right text-sm text-white/90 xl:min-w-32 xl:text-center xl:text-[0.8rem] 2xl:min-w-36">{formatSwiss(currentTime)}</div>
-        </div>
-      </div>
+      <TrackerPlaybackBar
+        currentTime={currentTime}
+        isPlaying={isPlaying}
+        onDecreasePlaySpeed={onDecreasePlaySpeed}
+        onIncreasePlaySpeed={onIncreasePlaySpeed}
+        onTimelineChange={onTimelineChange}
+        onTogglePlayback={onTogglePlayback}
+        playSpeed={playSpeed}
+        sliderStep={sliderStep}
+        timelineEnd={timelineEnd}
+        timelineStart={timelineStart}
+      />
       {showFullscreenButton ? (
         <button
           aria-label={isFullscreen ? "Vollbild beenden" : "Vollbild aktivieren"}
