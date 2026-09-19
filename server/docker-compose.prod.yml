@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/maede97/rega-eink-server:latest
+    image: ghcr.io/maede97/rega-tracker-api:latest
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
     restart: always
     networks:
@@ -9,18 +9,18 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=traefik-proxy'
-      - 'traefik.http.routers.rega-eink-server.rule=Host(`rega-api.hueppis.com`)'
-      - 'traefik.http.routers.rega-eink-server.entrypoints=websecure'
-      - 'traefik.http.routers.rega-eink-server.tls=true'
-      - 'traefik.http.routers.rega-eink-server.tls.certresolver=letsencrypt'
-      - 'traefik.http.services.rega-eink-server.loadbalancer.server.port=8000'
+      - 'traefik.http.routers.rega-tracker-api.rule=Host(`rega-api.hueppis.com`)'
+      - 'traefik.http.routers.rega-tracker-api.entrypoints=websecure'
+      - 'traefik.http.routers.rega-tracker-api.tls=true'
+      - 'traefik.http.routers.rega-tracker-api.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.rega-tracker-api.loadbalancer.server.port=8000'
     volumes:
       - ./flights.db:/app/flights.db
       - ./api_keys.txt:/app/api_keys.txt
     environment:
       - CORS_ORIGIN=rega.hueppis.com
   server:
-    image: ghcr.io/maede97/rega-web:latest
+    image: ghcr.io/maede97/rega-tracker-web:latest
     restart: always
     networks:
       - default
@@ -28,14 +28,14 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=traefik-proxy'
-      - 'traefik.http.routers.rega-web.rule=Host(`rega.hueppis.com`)'
-      - 'traefik.http.routers.rega-web.entrypoints=websecure'
-      - 'traefik.http.routers.rega-web.tls=true'
-      - 'traefik.http.routers.rega-web.tls.certresolver=letsencrypt'
-      - 'traefik.http.services.rega-web.loadbalancer.server.port=80'
+      - 'traefik.http.routers.rega-tracker-web.rule=Host(`rega.hueppis.com`)'
+      - 'traefik.http.routers.rega-tracker-web.entrypoints=websecure'
+      - 'traefik.http.routers.rega-tracker-web.tls=true'
+      - 'traefik.http.routers.rega-tracker-web.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.rega-tracker-web.loadbalancer.server.port=80'
 
   fetcher:
-    image: ghcr.io/maede97/rega-eink-server:latest
+    image: ghcr.io/maede97/rega-tracker-api:latest
     command: ["python", "fetch_current_data.py"]
     restart: no
     volumes:

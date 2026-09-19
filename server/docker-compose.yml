@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/maede97/rega-eink-server:latest
+    image: ghcr.io/maede97/rega-tracker-api:latest
     build:
       context: ..
       dockerfile: server/Dockerfile
@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
 
   server:
-    image: ghcr.io/maede97/rega-web:latest
+    image: ghcr.io/maede97/rega-tracker-web:latest
     build:
       context: ..
       dockerfile: web/Dockerfile
@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
 
   fetcher:
-    image: ghcr.io/maede97/rega-eink-server:latest
+    image: ghcr.io/maede97/rega-tracker-api:latest
     build:
       context: ..
       dockerfile: server/Dockerfile
