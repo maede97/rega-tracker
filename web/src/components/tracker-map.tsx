@@ -1,7 +1,7 @@
 "use client";
 
 import type { CircleMarker as LeafletCircleMarker, LeafletEvent } from "leaflet";
-import { useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import {
   CircleMarker,
   MapContainer,
@@ -113,7 +113,8 @@ function MapController({
     }
 
     lastFollowTargetRef.current = targetKey;
-    map.flyTo([followedFlight.lastPoint.lat, followedFlight.lastPoint.lon], map.getZoom(), {
+    map.stop();
+    map.panTo([followedFlight.lastPoint.lat, followedFlight.lastPoint.lon], {
       animate: true,
       duration: 0.5,
     });
@@ -189,15 +190,15 @@ export function TrackerMap({
         const isFollowed = followedCallsign === flight.callsign;
 
         return (
-          <Polyline
-            key={`progress-${flight.callsign}-${isLiveMode ? "live" : "range"}`}
-            pathOptions={{
-              color: "rgba(210, 35, 42, 0.95)",
-              opacity: flight.isStale ? 0.45 : 0.95,
-              weight: 3,
-            }}
-            positions={flight.points.map((point) => [point.lat, point.lon] as [number, number])}
-          >
+          <Fragment key={`progress-${flight.callsign}-${isLiveMode ? "live" : "range"}`}>
+            <Polyline
+              pathOptions={{
+                color: "rgba(210, 35, 42, 0.95)",
+                opacity: flight.isStale ? 0.45 : 0.95,
+                weight: 3,
+              }}
+              positions={flight.points.map((point) => [point.lat, point.lon] as [number, number])}
+            />
             <CircleMarker
               ref={(marker) => {
                 markerRefs.current[flight.callsign] = marker;
@@ -241,7 +242,7 @@ export function TrackerMap({
                 </div>
               </Popup>
             </CircleMarker>
-          </Polyline>
+          </Fragment>
         );
       })}
     </MapContainer>
