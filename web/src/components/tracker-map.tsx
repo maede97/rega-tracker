@@ -1,6 +1,7 @@
 "use client";
 
 import type { CircleMarker as LeafletCircleMarker, LeafletEvent } from "leaflet";
+import { LocateFixed, Share2 } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef } from "react";
 import {
   CircleMarker,
@@ -22,7 +23,9 @@ type TrackerMapProps = {
   isLiveMode: boolean;
   isPseudoFullscreen: boolean;
   onMapInteraction: () => void;
+  onShareFlight: (callsign: string) => void;
   onToggleFollow: (callsign: string) => void;
+  shareableCallsigns: ReadonlySet<string>;
   visibleFlights: VisibleFlight[];
 };
 
@@ -131,7 +134,9 @@ export function TrackerMap({
   isLiveMode,
   isPseudoFullscreen,
   onMapInteraction,
+  onShareFlight,
   onToggleFollow,
+  shareableCallsigns,
   visibleFlights,
 }: TrackerMapProps) {
   const markerRefs = useRef<Record<string, LeafletCircleMarker | null>>({});
@@ -188,6 +193,7 @@ export function TrackerMap({
 
       {visibleFlights.map((flight) => {
         const isFollowed = followedCallsign === flight.callsign;
+        const isShareable = shareableCallsigns.has(flight.callsign);
 
         return (
           <Fragment key={`progress-${flight.callsign}-${isLiveMode ? "live" : "range"}`}>
@@ -235,13 +241,35 @@ export function TrackerMap({
                   <div className="rounded-2xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
                     {formatFlightMetrics(flight.lastPoint.height, flight.lastPoint.groundSpeed)}
                   </div>
-                  <button
-                    className="cursor-pointer w-full rounded-full bg-[var(--rega-red)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--rega-red-deep)]"
-                    onClick={() => onToggleFollow(flight.callsign)}
-                    type="button"
-                  >
-                    {isFollowed ? "Folgen beenden" : "Folgen"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      aria-label={isFollowed ? `${flight.callsign} nicht mehr verfolgen` : `${flight.callsign} verfolgen`}
+                      className={`grid h-10 w-10 place-items-center rounded-full border text-sm font-semibold transition ${
+                        isFollowed
+                          ? "cursor-pointer border-[var(--gold)] bg-[var(--gold)] text-slate-950"
+                          : "cursor-pointer border-[var(--line)] bg-white text-[var(--rega-red)] hover:border-[var(--rega-red)] hover:bg-[var(--rega-red-soft)]/45"
+                      }`}
+                      onClick={() => onToggleFollow(flight.callsign)}
+                      title={isFollowed ? "Folgen beenden" : "Helikopter verfolgen"}
+                      type="button"
+                    >
+                      <LocateFixed className="h-4 w-4" strokeWidth={2.2} />
+                    </button>
+                    <button
+                      aria-label={isShareable ? `${flight.callsign} als Fluglink kopieren` : `${flight.callsign} kann noch nicht geteilt werden`}
+                      className={`grid h-10 w-10 place-items-center rounded-full border text-sm font-semibold transition ${
+                        isShareable
+                          ? "cursor-pointer border-[var(--line)] bg-white text-slate-700 hover:border-[var(--rega-red)] hover:bg-[var(--rega-red-soft)]/45 hover:text-[var(--rega-red)]"
+                          : "cursor-not-allowed border-[var(--line)] bg-slate-100 text-slate-400"
+                      }`}
+                      disabled={!isShareable}
+                      onClick={() => onShareFlight(flight.callsign)}
+                      title={isShareable ? "Fluglink kopieren" : "Flug ist noch nicht teilbar"}
+                      type="button"
+                    >
+                      <Share2 className="h-4 w-4" strokeWidth={2.2} />
+                    </button>
+                  </div>
                 </div>
               </Popup>
             </CircleMarker>

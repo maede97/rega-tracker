@@ -864,7 +864,9 @@ export function TrackerApp() {
           isPseudoFullscreen={isPseudoFullscreen}
           mapShellRef={mapShellRef}
           onMapInteraction={() => setFollowedCallsign(null)}
+          onShareFlight={handleShareFlight}
           onToggleFollow={handleToggleFollow}
+          shareableCallsigns={new Set(Object.keys(shareDescriptorsByCallsign))}
           visibleFlights={visibleFlights}
         />
 

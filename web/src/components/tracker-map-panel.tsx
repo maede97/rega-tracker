@@ -23,7 +23,9 @@ type TrackerMapPanelProps = {
   isPseudoFullscreen: boolean;
   mapShellRef: RefObject<HTMLDivElement | null>;
   onMapInteraction: () => void;
+  onShareFlight: (callsign: string) => void;
   onToggleFollow: (callsign: string) => void;
+  shareableCallsigns: ReadonlySet<string>;
   visibleFlights: VisibleFlight[];
 };
 
@@ -36,7 +38,9 @@ export function TrackerMapPanel({
   isPseudoFullscreen,
   mapShellRef,
   onMapInteraction,
+  onShareFlight,
   onToggleFollow,
+  shareableCallsigns,
   visibleFlights,
 }: TrackerMapPanelProps) {
   return (
@@ -54,7 +58,9 @@ export function TrackerMapPanel({
         isLiveMode={isLiveEnabled}
         isPseudoFullscreen={isPseudoFullscreen}
         onMapInteraction={onMapInteraction}
+        onShareFlight={onShareFlight}
         onToggleFollow={onToggleFollow}
+        shareableCallsigns={shareableCallsigns}
         visibleFlights={visibleFlights}
       />
     </section>
