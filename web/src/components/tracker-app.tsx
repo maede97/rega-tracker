@@ -31,6 +31,8 @@ const PRESETS: TrackerPreset[] = [
   { label: "6 Stunden", value: 21600 },
   { label: "24 Stunden", value: 86400 },
   { label: "7 Tage", value: 604800 },
+  { label: "14 Tage", value: 1209600 },
+  { label: "28 Tage", value: 2419200 },
 ];
 
 type TimelineState = {

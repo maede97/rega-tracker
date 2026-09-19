@@ -47,7 +47,7 @@ export function TrackerFlightSidebar({
 
       <div className="border-t border-[var(--line)] px-5 py-4 text-sm text-[var(--muted)]">
         <div className="flex items-center justify-between gap-3">
-          <span>Daten älter als zwei Wochen sind nicht verfügbar.</span>
+          <span>Daten älter als vier Wochen sind nicht verfügbar.</span>
           {showClearKey ? (
             <button
               className="cursor-pointer rounded-full border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-slate-950 transition hover:border-[var(--rega-red)] hover:text-[var(--rega-red)]"

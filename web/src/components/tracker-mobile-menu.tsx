@@ -73,7 +73,7 @@ export function TrackerMobileMenu({
           </button>
         ) : null}
         <div className="rounded-[1.4rem] border border-white/15 bg-white/10 px-4 py-4 text-sm text-white/78 backdrop-blur">
-          Daten älter als zwei Wochen sind nicht verfügbar.
+          Daten älter als vier Wochen sind nicht verfügbar.
         </div>
         <div className="text-center text-xs text-white/70">Bereitgestellt von Flightradar24 via rega.hueppis.com</div>
       </div>

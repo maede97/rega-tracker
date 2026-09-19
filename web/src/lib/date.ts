@@ -1,4 +1,4 @@
-export const MAX_LOOKBACK_MS = 14 * 24 * 60 * 60 * 1000;
+export const MAX_LOOKBACK_MS = 28 * 24 * 60 * 60 * 1000;
 
 function pad(value: number) {
   return String(value).padStart(2, "0");
