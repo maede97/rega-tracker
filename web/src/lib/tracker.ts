@@ -1,6 +1,7 @@
 export type ApiFlightRecord = {
   active?: boolean | number;
   callsign: string;
+  height?: number | string | null;
   latitude: number | string;
   longitude: number | string;
   observed_at?: number | string;
@@ -9,6 +10,7 @@ export type ApiFlightRecord = {
 
 export type FlightPoint = {
   active: boolean;
+  height: number | null;
   lat: number;
   lon: number;
   ts: number;
@@ -27,6 +29,7 @@ export function normalizeFlights(records: ApiFlightRecord[]) {
   const grouped: FlightsByCallsign = {};
 
   for (const record of records) {
+    const height = record.height == null ? null : Number(record.height);
     const ts = Number(record.observed_at ?? record.timestamp);
     const lat = Number(record.latitude);
     const lon = Number(record.longitude);
@@ -38,6 +41,7 @@ export function normalizeFlights(records: ApiFlightRecord[]) {
     grouped[record.callsign] ??= [];
     grouped[record.callsign].push({
       active: record.active === true || record.active === 1,
+      height: Number.isFinite(height) ? height : null,
       lat,
       lon,
       ts,
@@ -109,4 +113,12 @@ export function nextDataTimeAfter(flightData: FlightsByCallsign, unixTime: numbe
   }
 
   return Number.isFinite(next) ? next : null;
+}
+
+export function formatHeight(height: number | null) {
+  if (height === null) {
+    return "Hoehe unbekannt";
+  }
+
+  return `${Math.round(height).toLocaleString("de-CH")} ft`;
 }

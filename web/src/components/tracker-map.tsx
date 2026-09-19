@@ -11,7 +11,7 @@ import {
   Tooltip,
   useMap,
 } from "react-leaflet";
-import type { FlightsByCallsign, VisibleFlight } from "@/lib/tracker";
+import { formatHeight, type FlightsByCallsign, type VisibleFlight } from "@/lib/tracker";
 import { formatSwiss } from "@/lib/date";
 
 type TrackerMapProps = {
@@ -231,6 +231,9 @@ export function TrackerMap({
                   </div>
                   <div className="rounded-2xl bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
                     {flight.lastPoint.lat.toFixed(5)}, {flight.lastPoint.lon.toFixed(5)}
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+                    {formatHeight(flight.lastPoint.height)}
                   </div>
                   <button
                     className="cursor-pointer w-full rounded-full bg-[var(--rega-red)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--rega-red-deep)]"

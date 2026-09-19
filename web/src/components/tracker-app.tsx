@@ -17,7 +17,7 @@ import {
   type FlightsByCallsign,
 } from "@/lib/tracker";
 
-const API_ROOT = process.env.NEXT_PUBLIC_REGA_API_BASE ?? "https://rega-api.hueppis.com";
+const API_ROOT = "https://rega-api.hueppis.com";
 const API_RANGE_URL = `${API_ROOT}/flights/range`;
 const API_LIVE_URL = `${API_ROOT}/flights`;
 const LIVE_FETCH_INTERVAL_MS = 30_000;

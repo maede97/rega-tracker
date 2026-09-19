@@ -8,12 +8,10 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
+from db import ensure_schema
+
 DB_PATH = Path(__file__).resolve().with_name("flights.db")
 API_KEYS_PATH = Path(__file__).resolve().with_name("api_keys.txt")
-
-PROJECT_ROOT = Path(__file__).resolve().parent
-WEB_DIR = PROJECT_ROOT / "web"
-
 
 app = FastAPI(title="REGA Flights API", version="1.0.0")
 
@@ -36,32 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-def ensure_schema(conn: sqlite3.Connection) -> None:
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS flights (
-            timestamp numeric,
-            callsign TEXT,
-            latitude REAL,
-            longitude REAL,
-            active BOOLEAN
-        )
-        """
-    )
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS flights_history (
-            observed_at numeric,
-            callsign TEXT,
-            latitude REAL,
-            longitude REAL,
-            recorded_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-        """
-    )
-
 
 @app.get("/health")
 def health() -> dict[str, str]:
@@ -113,7 +85,7 @@ def get_flights(limit: int = 1000, authorization: str | None = Header(default=No
         ensure_schema(conn)
         rows = conn.execute(
             """
-            SELECT timestamp, callsign, latitude, longitude, active
+            SELECT timestamp, callsign, latitude, longitude, height, active
             FROM flights
             ORDER BY timestamp DESC
             LIMIT ?
@@ -127,9 +99,10 @@ def get_flights(limit: int = 1000, authorization: str | None = Header(default=No
             "callsign": callsign,
             "latitude": latitude,
             "longitude": longitude,
+            "height": height,
             "active": active,
         }
-        for timestamp, callsign, latitude, longitude, active in rows
+        for timestamp, callsign, latitude, longitude, height, active in rows
     ]
     return JSONResponse(content={"flights": payload, "count": len(payload)})
 
@@ -144,7 +117,7 @@ def get_flights_history(limit: int = 1000, authorization: str | None = Header(de
         ensure_schema(conn)
         rows = conn.execute(
             """
-            SELECT observed_at, callsign, latitude, longitude, recorded_at
+            SELECT observed_at, callsign, latitude, longitude, height, recorded_at
             FROM flights_history
             ORDER BY observed_at DESC
             LIMIT ?
@@ -158,9 +131,10 @@ def get_flights_history(limit: int = 1000, authorization: str | None = Header(de
             "callsign": callsign,
             "latitude": latitude,
             "longitude": longitude,
+            "height": height,
             "recorded_at": recorded_at,
         }
-        for observed_at, callsign, latitude, longitude, recorded_at in rows
+        for observed_at, callsign, latitude, longitude, height, recorded_at in rows
     ]
     return JSONResponse(content={"history": payload, "count": len(payload)})
 
@@ -172,7 +146,7 @@ def get_flights_range(start: str, end: str, authorization: str | None = Header(d
         ensure_schema(conn)
         rows = conn.execute(
             """
-            SELECT observed_at, callsign, latitude, longitude
+            SELECT observed_at, callsign, latitude, longitude, height
             FROM flights_history
             WHERE observed_at > ? AND observed_at < ?
             ORDER BY observed_at DESC
@@ -186,29 +160,8 @@ def get_flights_range(start: str, end: str, authorization: str | None = Header(d
             "callsign": callsign,
             "latitude": latitude,
             "longitude": longitude,
+            "height": height,
         }
-        for observed_at, callsign, latitude, longitude in rows
+        for observed_at, callsign, latitude, longitude, height in rows
     ]
     return JSONResponse(content={"flights": payload, "count": len(payload)})
-
-
-@app.get("/")
-def root() -> FileResponse:
-    index = WEB_DIR / "index.html"
-    if not index.exists():
-        raise HTTPException(status_code=404, detail="index.html not found")
-    return FileResponse(index, media_type="text/html")
-
-@app.get("/favicon.ico")
-def favicon() -> FileResponse:
-    favicon_path = WEB_DIR / "favicon.ico"
-    if not favicon_path.exists():
-        raise HTTPException(status_code=404, detail="favicon.ico not found")
-    return FileResponse(favicon_path, media_type="image/x-icon")
-
-@app.get("/apple-touch-icon.png")
-def apple_touch_icon() -> FileResponse:
-    apple_touch_icon_path = WEB_DIR / "apple-touch-icon.png"
-    if not apple_touch_icon_path.exists():
-        raise HTTPException(status_code=404, detail="apple-touch-icon.png not found")
-    return FileResponse(apple_touch_icon_path, media_type="image/png")

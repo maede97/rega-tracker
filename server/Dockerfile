@@ -5,12 +5,11 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends cron && rm -rf /var/lib/apt/lists/*
-
 COPY server/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY server/main.py ./main.py
+COPY server/db.py ./db.py
 COPY server/fetch_current_data.py ./fetch_current_data.py
 
 COPY web ./web

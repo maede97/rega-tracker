@@ -3,36 +3,16 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 import datetime
+import math
 
 from FlightRadarAPI import FlightRadar24API
+
+from db import ensure_schema
 
 DB_PATH = Path(__file__).resolve().with_name("flights.db")
 AIRLINE_ICAO = "RGA"
 
 
-def ensure_schema(conn: sqlite3.Connection) -> None:
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS flights (
-            timestamp numeric,
-            callsign TEXT,
-            latitude REAL,
-            longitude REAL,
-            active BOOLEAN
-        )
-        """
-    )
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS flights_history (
-            observed_at numeric,
-            callsign TEXT,
-            latitude REAL,
-            longitude REAL,
-            recorded_at numeric DEFAULT CURRENT_TIMESTAMP
-        )
-        """
-    )
 
 
 def fetch_current_flights() -> list[dict[str, object]]:
@@ -64,6 +44,7 @@ def fetch_current_flights() -> list[dict[str, object]]:
                 "callsign": getattr(flight, "callsign", None),
                 "latitude": getattr(flight, "latitude", None),
                 "longitude": getattr(flight, "longitude", None),
+                "height": getattr(flight, "altitude", None),
                 "active": 1
             }
         )
@@ -98,13 +79,14 @@ def persist_flights(records: list[dict[str, object]]) -> int:
         )
         
         conn.executemany(
-            "INSERT INTO flights (timestamp, callsign, latitude, longitude, active) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO flights (timestamp, callsign, latitude, longitude, height, active) VALUES (?, ?, ?, ?, ?, ?)",
             [
                 (
                     record.get("timestamp"),
                     record.get("callsign"),
                     record.get("latitude"),
                     record.get("longitude"),
+                    record.get("height"),
                     record.get("active"),
                 )
                 for record in filtered_records
@@ -112,8 +94,8 @@ def persist_flights(records: list[dict[str, object]]) -> int:
         )
         conn.executemany(
             """
-            INSERT INTO flights_history (observed_at, callsign, latitude, longitude)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO flights_history (observed_at, callsign, latitude, longitude, height)
+            VALUES (?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -121,6 +103,7 @@ def persist_flights(records: list[dict[str, object]]) -> int:
                     record.get("callsign"),
                     record.get("latitude"),
                     record.get("longitude"),
+                    record.get("height"),
                 )
                 for record in filtered_records
             ],

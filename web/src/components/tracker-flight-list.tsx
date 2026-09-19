@@ -1,6 +1,6 @@
 import { LocateFixed } from "lucide-react";
 import { formatSwiss } from "@/lib/date";
-import type { VisibleFlight } from "@/lib/tracker";
+import { formatHeight, type VisibleFlight } from "@/lib/tracker";
 
 type TrackerFlightListProps = {
   followedCallsign: string | null;
@@ -49,6 +49,7 @@ export function TrackerFlightList({
             ) : null}
           </div>
           <div className="mt-1 font-mono text-[0.7rem] text-[var(--muted)]">{formatSwiss(flight.lastPoint.ts)} / {flight.lastPoint.lat.toFixed(4)}, {flight.lastPoint.lon.toFixed(4)}</div>
+          <div className="mt-1 text-[0.72rem] font-medium text-slate-600">{formatHeight(flight.lastPoint.height)}</div>
         </button>
 
         <button
